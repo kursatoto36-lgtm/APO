@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="tr" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Erişimi & Geliştirme Portalı</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                            950: '#0b1329',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 8s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        
+        /* Glassmorphism Backgrounds */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-blue {
+            background: rgba(30, 58, 138, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        /* Countdown SVG stroke animation */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased overflow-x-hidden selection:bg-blue-500 selection:text-white">
+
+    <!-- TOP SIMULATION CONTROL BAR (TESTING TOOL) -->
+    <header class="bg-slate-900/90 border-b border-slate-800 text-xs px-4 py-2 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-50 shadow-md">
+        <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 font-semibold border border-blue-500/20">
+                <i class="fa-solid me-1 fa-network-wired text-xs"></i> Güvenlik & Simülasyon Paneli
+            </span>
+            <span class="text-slate-400 hidden sm:inline">| Bağlı IP: <strong id="detected-ip-display" class="text-slate-200">Tespit ediliyor...</strong></span>
+        </div>
+
+        <div class="flex items-center gap-3 flex-wrap">
+            <button id="toggle-ip-btn" onclick="toggleSimulatedRole()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1 rounded border border-slate-700 font-medium transition flex items-center gap-1.5">
+                <i class="fa-solid fa-repeat text-blue-400"></i> Yetkili IP Simülasyonunu Aç/Kapat
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 flex flex-col relative min-h-[calc(100vh-41px)] bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950/40">
+        
+        <!-- SECTION 1: AUTHORIZED IP SELECTION SCREEN -->
+        <section id="auth-choice-section" class="hidden flex-1 flex items-center justify-center p-4">
+            <div class="glass-panel p-8 md:p-10 rounded-3xl max-w-lg w-full text-center shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl"></div>
+                <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl"></div>
+                
+                <div class="w-16 h-16 bg-blue-500/10 border border-blue-500/30 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-400 text-2xl shadow-lg">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+
+                <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold rounded-full uppercase tracking-wider">
+                    <i class="fa-solid fa-circle text-[8px] me-1 animate-pulse"></i> Yetkili Sistem Erişimi
+                </span>
+
+                <h1 class="text-2xl md:text-3xl font-bold text-white mt-4 mb-2">Hoş Geldiniz</h1>
+                <p class="text-slate-400 text-sm mb-8">
+                    IP adresiniz güvenlik protokollerinden başarıyla geçti. Lütfen yönlendirilmek istediğiniz paneli seçiniz.
+                </p>
+
+                <div class="space-y-4">
+                    <button onclick="navigateTo('admin-panel')" class="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition duration-300 flex items-center justify-between group">
+                        <span class="flex items-center gap-3">
+                            <i class="fa-solid fa-user-gear text-xl group-hover:scale-110 transition-transform"></i>
+                            <span class="text-left">
+                                <span class="block text-base leading-tight">Admin Paneli</span>
+                                <span class="text-xs text-blue-200 font-normal">Canlı ziyaretçi ve cihaz izleme paneli</span>
+                            </span>
+                        </span>
+                        <i class="fa-solid fa-arrow-right text-blue-200 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+
+                    <button onclick="startVisitorRedirect()" class="w-full py-4 px-6 bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 font-semibold rounded-xl border border-slate-700 transition duration-300 flex items-center justify-between group">
+                        <span class="flex items-center gap-3">
+                            <i class="fa-solid fa-globe text-xl text-slate-400 group-hover:scale-110 transition-transform"></i>
+                            <span class="text-left">
+                                <span class="block text-base leading-tight">Ziyaretçi Paneli</span>
+                                <span class="text-xs text-slate-400 font-normal">Normal ziyaretçi akışını başlat</span>
+                            </span>
+                        </span>
+                        <i class="fa-solid fa-arrow-right text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: 10-SECOND REDIRECT LOADING SCREEN (BLUE THEME) -->
+        <section id="redirect-loading-section" class="hidden flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-blue-950 via-slate-900 to-slate-950 text-center relative overflow-hidden">
+            <!-- Background Glows -->
+            <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="glass-blue p-8 md:p-12 rounded-3xl max-w-md w-full flex flex-col items-center relative z-10 shadow-2xl border border-blue-500/30">
+                <!-- Circular Countdown & Spinner -->
+                <div class="relative w-36 h-36 flex items-center justify-center mb-6">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                        <circle class="text-slate-800" stroke-width="6" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"/>
+                        <circle id="countdown-ring" class="text-blue-500 progress-ring__circle" stroke-width="6" stroke-dasharray="251.2" stroke-dashoffset="0" stroke-linecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"/>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <span id="countdown-timer" class="text-4xl font-extrabold text-white font-mono">10</span>
+                        <span class="text-[10px] text-blue-300 tracking-widest uppercase">Saniye</span>
+                    </div>
+                </div>
+
+                <h2 class="text-2xl font-bold text-white mb-2">Siteye Yönlendiriliyorsunuz</h2>
+                <p class="text-blue-200/80 text-sm mb-6">Lütfen bekleyin, altyapı bağlantısı kuruluyor ve sistem kaynakları hazırlanıyor...</p>
+
+                <!-- Animated Loading Status -->
+                <div class="w-full bg-slate-900/80 rounded-full h-2 mb-4 overflow-hidden border border-blue-500/20">
+                    <div id="loading-bar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full w-0 transition-all duration-1000 ease-linear"></div>
+                </div>
+
+                <div class="flex items-center gap-2 text-xs text-blue-300 font-mono">
+                    <i class="fa-solid fa-spinner animate-spin"></i>
+                    <span id="loading-status-text">Cihaz konfigürasyonu taranıyor...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: UNDER DEVELOPMENT PUBLIC LANDING PAGE -->
+        <section id="under-dev-section" class="hidden flex-1 flex items-center justify-center p-4 md:p-8">
+            <div class="max-w-5xl w-full grid md:grid-cols-2 gap-8 items-center glass-panel p-8 md:p-12 rounded-3xl border border-slate-800 shadow-2xl relative overflow-hidden">
+                <!-- Left Column: Graphic Illustration -->
+                <div class="relative flex justify-center items-center">
+                    <div class="absolute w-72 h-72 bg-blue-500/20 rounded-full blur-3xl -z-10"></div>
+                    <img src="https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?q=80&w=800&auto=format&fit=crop" 
+                         alt="Geliştirme Aşamasında" 
+                         class="rounded-2xl shadow-2xl border border-slate-700/60 object-cover w-full max-h-80 md:max-h-96 hover:scale-[1.02] transition duration-500"
+                         onerror="this.src='https://placehold.co/600x400/1e293b/3b82f6?text=Sitemiz+Gəlistiriliyor'">
+                    
+                    <div class="absolute -bottom-4 -right-2 md:right-4 bg-slate-900/90 border border-blue-500/40 backdrop-blur-md p-3.5 rounded-2xl shadow-xl flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400">
+                            <i class="fa-solid fa-code text-lg"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">Sistem Durumu</p>
+                            <p class="text-sm font-semibold text-blue-400">v2.4 Güncellemesi Yayında</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Content -->
+                <div class="flex flex-col text-left space-y-5">
+                    <div>
+                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-semibold uppercase tracking-wider mb-3">
+                            <i class="fa-solid fa-wrench"></i> Çalışma Yapılıyor
+                        </span>
+                        <h1 class="text-3xl md:text-4xl font-extrabold text-white leading-tight">
+                            Sitemiz Geliştirilmektedir
+                        </h1>
+                    </div>
+
+                    <p class="text-slate-300 text-sm md:text-base leading-relaxed">
+                        Sizlere daha hızlı, güvenli ve modern bir deneyim sunabilmek amacıyla altyapımızı yeniliyoruz. Kısa süre içerisinde yenilenen arayüzümüzle hizmetinizde olacağız.
+                    </p>
+
+                    <!-- Features/Badges -->
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-xl flex items-center gap-2.5">
+                            <i class="fa-solid fa-bolt text-amber-400"></i>
+                            <span class="text-xs text-slate-300 font-medium">Yüksek Performans</span>
+                        </div>
+                        <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-xl flex items-center gap-2.5">
+                            <i class="fa-solid fa-lock text-emerald-400"></i>
+                            <span class="text-xs text-slate-300 font-medium">Uçtan Uca Güvenlik</span>
+                        </div>
+                    </div>
+
+                    <!-- Newsletter Form Placeholder -->
+                    <div class="pt-3">
+                        <label class="block text-xs text-slate-400 mb-1.5 font-medium">Açılışta Bildirim Alın</label>
+                        <form onsubmit="handleEmailSubmit(event)" class="flex gap-2">
+                            <input type="email" id="visitor-email-input" placeholder="E-posta adresiniz..." required class="bg-slate-900 border border-slate-700 text-sm rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-blue-500 flex-1">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm px-5 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/30 flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane text-xs"></i> Katıl
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="flex items-center gap-4 text-slate-400 text-sm pt-2">
+                        <span class="text-xs">Takip Edin:</span>
+                        <a href="#" class="hover:text-blue-400 transition"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" class="hover:text-blue-400 transition"><i class="fa-brands fa-github"></i></a>
+                        <a href="#" class="hover:text-blue-400 transition"><i class="fa-brands fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: ADMIN DASHBOARD (LIVE MONITORING) -->
+        <section id="admin-panel-section" class="hidden flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+            <!-- Header Banner -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-slate-900/80 p-6 rounded-2xl border border-slate-800 shadow-xl">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-2xl font-bold text-white">Canlı Ziyaretçi & Cihaz Analitiği</h1>
+                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Canlı İzleme (2s)
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Giren ziyaretçilerin IP adresi, cihaz türü, tarayıcı ve altyapı/konum bilgileri anlık güncellenir.</p>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button onclick="clearVisitorLogs()" class="px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i> Kayıtları Temizle
+                    </button>
+                    <button onclick="simulateNewVisitor()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-blue-600/25 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-plus"></i> Simüle Ziyaretçi Ekle
+                    </button>
+                </div>
+            </div>
+
+            <!-- Metric Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex items-center justify-between shadow-md">
+                    <div>
+                        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Anlık Aktif Kullanıcı</p>
+                        <h3 id="stat-active-count" class="text-3xl font-extrabold text-white mt-1">0</h3>
+                        <p class="text-[11px] text-emerald-400 mt-1"><i class="fa-solid fa-arrow-trend-up me-1"></i>Son 5 dakikada aktif</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex items-center justify-between shadow-md">
+                    <div>
+                        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Toplam İstek</p>
+                        <h3 id="stat-total-count" class="text-3xl font-extrabold text-white mt-1">0</h3>
+                        <p class="text-[11px] text-blue-400 mt-1"><i class="fa-solid fa-arrows-rotate me-1"></i>Tüm oturumlar</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex items-center justify-between shadow-md">
+                    <div>
+                        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Baskın Cihaz Türü</p>
+                        <h3 id="stat-top-device" class="text-xl font-bold text-white mt-2">Masaüstü</h3>
+                        <p class="text-[11px] text-purple-400 mt-1"><i class="fa-solid fa-laptop me-1"></i>Masaüstü & Mobil</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex items-center justify-between shadow-md">
+                    <div>
+                        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Son Güncelleme</p>
+                        <h3 id="stat-last-sync" class="text-xl font-bold font-mono text-emerald-400 mt-2">--:--:--</h3>
+                        <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-clock me-1"></i>2s Polling aktif</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-wave-square"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visitors Live Table -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-blue-400"></i>
+                        Ziyaretçi Log & E-posta Kayıtları
+                    </h2>
+                    <span class="text-xs text-slate-400">Otomatik yenileniyor (2s)</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950/60 text-slate-400 text-xs uppercase font-semibold border-b border-slate-800">
+                                <th class="p-4">Ziyaretçi IP</th>
+                                <th class="p-4">E-posta Adresi</th>
+                                <th class="p-4">Cihaz & İşletim Sistemi</th>
+                                <th class="p-4">Tarayıcı & Çözünürlük</th>
+                                <th class="p-4">Konum & Altyapı (İSP)</th>
+                                <th class="p-4">Son Görülme</th>
+                                <th class="p-4 text-center">Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitor-table-body" class="divide-y divide-slate-800/60 text-sm text-slate-300">
+                            <!-- Rows loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- CUSTOM TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <!-- JAVASCRIPT ARCHITECTURE & LOGIC -->
+    <script>
+        // Global Application State & Obfuscated Encrypted Admin IP (78.163.113.118)
+        const state = {
+            userIP: 'Tespit Ediliyor...',
+            encAdminBase64: 'NzguMTYzLjExMy4xMTg=',
+            isAuthorized: false,
+            currentRole: 'visitor',
+            countdownValue: 10,
+            countdownTimer: null,
+            pollingTimer: null,
+            currentSessionId: null,
+            userEmail: ''
+        };
+
+        // Secure IP Decode Helper Function
+        function getDecodedAdminIP() {
+            try {
+                return atob(state.encAdminBase64);
+            } catch (e) {
+                return '';
+            }
+        }
+
+        // User Agent Parser Helper
+        function parseUserAgent() {
+            const ua = navigator.userAgent;
+            let os = "Windows";
+            let deviceType = "Masaüstü";
+            let browser = "Chrome";
+
+            if (ua.indexOf("Win") !== -1) os = "Windows";
+            else if (ua.indexOf("Mac") !== -1) os = "macOS";
+            else if (ua.indexOf("Linux") !== -1) os = "Linux";
+            else if (ua.indexOf("Android") !== -1) os = "Android";
+            else if (ua.indexOf("like Mac") !== -1) os = "iOS";
+
+            if (/Mobi|Android|iPhone|iPad/i.test(ua)) {
+                deviceType = "Mobil";
+            }
+
+            if (ua.indexOf("Chrome") !== -1 && ua.indexOf("Edg") === -1) browser = "Chrome";
+            else if (ua.indexOf("Safari") !== -1 && ua.indexOf("Chrome") === -1) browser = "Safari";
+            else if (ua.indexOf("Firefox") !== -1) browser = "Firefox";
+            else if (ua.indexOf("Edg") !== -1) browser = "Edge";
+
+            return {
+                os,
+                deviceType,
+                browser,
+                resolution: `${window.screen.width}x${window.screen.height}`
+            };
+        }
+
+        // Initialize App on Load
+        window.onload = async function() {
+            state.currentSessionId = 'sess_' + Math.random().toString(36).substring(2, 9);
+
+            // Fetch Real Public IP
+            await fetchUserIP();
+
+            // Register current user session
+            recordCurrentVisitor();
+
+            // Evaluate Access with secure match
+            evaluateIPAccess();
+
+            // Start 2-second background polling
+            startLivePolling();
+        };
+
+        // Fetch User Public IP address via fallback APIs
+        async function fetchUserIP() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                state.userIP = data.ip;
+            } catch (err) {
+                state.userIP = '185.220.101.5';
+            }
+            document.getElementById('detected-ip-display').innerText = state.userIP;
+        }
+
+        // Evaluate Access securely against decoded hidden IP
+        function evaluateIPAccess() {
+            const authorizedIP = getDecodedAdminIP();
+
+            if (state.userIP === authorizedIP) {
+                state.isAuthorized = true;
+                navigateTo('auth-choice');
+            } else {
+                state.isAuthorized = false;
+                startVisitorRedirect();
+            }
+        }
+
+        // Toggle Simulated IP for Testing Admin Access
+        function toggleSimulatedRole() {
+            const adminIP = getDecodedAdminIP();
+            if (state.userIP === adminIP) {
+                state.userIP = '176.234.12.89'; // Non-admin visitor IP
+            } else {
+                state.userIP = adminIP; // Target Admin IP (78.163.113.118)
+            }
+            document.getElementById('detected-ip-display').innerText = state.userIP;
+            showNotification(`IP değiştirildi: ${state.userIP}`);
+            
+            recordCurrentVisitor();
+            evaluateIPAccess();
+        }
+
+        // View Navigation Manager
+        function navigateTo(sectionId) {
+            document.getElementById('auth-choice-section').classList.add('hidden');
+            document.getElementById('redirect-loading-section').classList.add('hidden');
+            document.getElementById('under-dev-section').classList.add('hidden');
+            document.getElementById('admin-panel-section').classList.add('hidden');
+
+            if (sectionId !== 'redirect-loading' && state.countdownTimer) {
+                clearInterval(state.countdownTimer);
+            }
+
+            if (sectionId === 'auth-choice') {
+                document.getElementById('auth-choice-section').classList.remove('hidden');
+            } else if (sectionId === 'redirect-loading') {
+                document.getElementById('redirect-loading-section').classList.remove('hidden');
+            } else if (sectionId === 'under-dev') {
+                document.getElementById('under-dev-section').classList.remove('hidden');
+            } else if (sectionId === 'admin-panel') {
+                document.getElementById('admin-panel-section').classList.remove('hidden');
+                renderAdminDashboard();
+            }
+        }
+
+        // Start 10-Second Redirect Countdown
+        function startVisitorRedirect() {
+            navigateTo('redirect-loading');
+            state.countdownValue = 10;
+            
+            const timerDisplay = document.getElementById('countdown-timer');
+            const loadingBar = document.getElementById('loading-bar');
+            const ring = document.getElementById('countdown-ring');
+            const statusText = document.getElementById('loading-status-text');
+
+            const fullDash = 251.2;
+            const statusMessages = [
+                "Cihaz konfigürasyonu taranıyor...",
+                "Güvenlik sertifikaları doğrulanıyor...",
+                "Sunucu bağlantısı optimize ediliyor...",
+                "Arayüz kaynakları yükleniyor...",
+                "Yönlendirme tamamlanıyor..."
+            ];
+
+            ring.style.strokeDashoffset = '0';
+            loadingBar.style.width = '0%';
+            timerDisplay.innerText = state.countdownValue;
+
+            if (state.countdownTimer) clearInterval(state.countdownTimer);
+
+            state.countdownTimer = setInterval(() => {
+                state.countdownValue--;
+                timerDisplay.innerText = state.countdownValue;
+
+                const elapsed = 10 - state.countdownValue;
+                const percentage = (elapsed / 10) * 100;
+                loadingBar.style.width = `${percentage}%`;
+
+                const offset = fullDash - (elapsed / 10) * fullDash;
+                ring.style.strokeDashoffset = offset;
+
+                if (elapsed % 2 === 0) {
+                    const msgIdx = Math.min(Math.floor(elapsed / 2), statusMessages.length - 1);
+                    statusText.innerText = statusMessages[msgIdx];
+                }
+
+                if (state.countdownValue <= 0) {
+                    clearInterval(state.countdownTimer);
+                    navigateTo('under-dev');
+                    showNotification('Sitemiz geliştirilmektedir sayfasına yönlendirildiniz.');
+                }
+            }, 1000);
+        }
+
+        // Record Visitor Details
+        function recordCurrentVisitor(customEmail = null) {
+            const deviceInfo = parseUserAgent();
+            const logs = JSON.parse(localStorage.getItem('visitor_analytics_logs') || '[]');
+            const existingIdx = logs.findIndex(l => l.sessionId === state.currentSessionId);
+            const targetAdminIP = getDecodedAdminIP();
+
+            if (customEmail) {
+                state.userEmail = customEmail;
+            }
+
+            const existingEmail = existingIdx >= 0 ? logs[existingIdx].email : null;
+
+            const visitorData = {
+                sessionId: state.currentSessionId,
+                ip: state.userIP,
+                email: customEmail || existingEmail || state.userEmail || null,
+                deviceType: deviceInfo.deviceType,
+                os: deviceInfo.os,
+                browser: deviceInfo.browser,
+                resolution: deviceInfo.resolution,
+                location: state.userIP === targetAdminIP ? 'İstanbul, TR (Türk Telekom)' : 'Ankara, TR (Turkcell Superonline)',
+                lastActive: new Date().toLocaleTimeString('tr-TR'),
+                timestamp: Date.now()
+            };
+
+            if (existingIdx >= 0) {
+                logs[existingIdx] = visitorData;
+            } else {
+                logs.unshift(visitorData);
+            }
+
+            localStorage.setItem('visitor_analytics_logs', JSON.stringify(logs.slice(0, 20)));
+        }
+
+        // Handle Visitor Email Form Submission
+        function handleEmailSubmit(event) {
+            event.preventDefault();
+            const emailInput = document.getElementById('visitor-email-input');
+            const email = emailInput.value.trim();
+
+            if (email) {
+                recordCurrentVisitor(email);
+                showNotification(`E-posta başarıyla kaydedildi: ${email}`);
+                emailInput.value = '';
+                
+                if (!document.getElementById('admin-panel-section').classList.contains('hidden')) {
+                    renderAdminDashboard();
+                }
+            }
+        }
+
+        // Continuous 2-second Polling Engine for Real-Time Admin Updates
+        function startLivePolling() {
+            if (state.pollingTimer) clearInterval(state.pollingTimer);
+
+            state.pollingTimer = setInterval(() => {
+                recordCurrentVisitor();
+                if (!document.getElementById('admin-panel-section').classList.contains('hidden')) {
+                    renderAdminDashboard();
+                }
+            }, 2000);
+        }
+
+        // Render Admin Dashboard
+        function renderAdminDashboard() {
+            const logs = JSON.parse(localStorage.getItem('visitor_analytics_logs') || '[]');
+            const tbody = document.getElementById('visitor-table-body');
+            const now = Date.now();
+            const activeLogs = logs.filter(l => (now - l.timestamp) < 30000);
+            
+            document.getElementById('stat-active-count').innerText = activeLogs.length;
+            document.getElementById('stat-total-count').innerText = logs.length;
+            document.getElementById('stat-last-sync').innerText = new Date().toLocaleTimeString('tr-TR');
+
+            const mobileCount = logs.filter(l => l.deviceType === 'Mobil').length;
+            const desktopCount = logs.length - mobileCount;
+            document.getElementById('stat-top-device').innerText = desktopCount >= mobileCount ? 'Masaüstü' : 'Mobil';
+
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">Henüz kayıtlı ziyaretçi verisi bulunmuyor.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = logs.map(log => {
+                const isActive = (now - log.timestamp) < 15000;
+                const isCurrent = log.sessionId === state.currentSessionId;
+
+                return `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="p-4 font-mono font-medium text-blue-400">
+                            ${log.ip}
+                            ${isCurrent ? '<span class="ms-1.5 px-1.5 py-0.5 text-[9px] bg-blue-500/20 text-blue-300 rounded border border-blue-500/30">Siz</span>' : ''}
+                        </td>
+                        <td class="p-4">
+                            ${log.email ? 
+                                `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-300 border border-blue-500/20 font-medium text-xs"><i class="fa-solid fa-envelope text-blue-400"></i> ${log.email}</span>` : 
+                                `<span class="text-xs text-slate-500 italic"><i class="fa-solid fa-minus text-[10px] me-1"></i>Girilmedi</span>`
+                            }
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid ${log.deviceType === 'Mobil' ? 'fa-mobile-screen text-purple-400' : 'fa-laptop text-blue-400'} text-base"></i>
+                                <div>
+                                    <span class="block font-medium text-slate-200">${log.os}</span>
+                                    <span class="text-xs text-slate-400">${log.deviceType}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <span class="block font-medium text-slate-200">${log.browser}</span>
+                            <span class="text-xs text-slate-400 font-mono">${log.resolution}</span>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-location-dot text-emerald-400 text-xs"></i>
+                                <span class="text-xs text-slate-300">${log.location}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-xs font-mono text-slate-400">
+                            ${log.lastActive}
+                        </td>
+                        <td class="p-4 text-center">
+                            ${isActive ? 
+                                '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Çevrimiçi</span>' : 
+                                '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">Ayrıldı</span>'
+                            }
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Admin Utility: Simulate a New Visitor Event
+        function simulateNewVisitor() {
+            const sampleIPs = ['176.234.12.89', '85.105.44.12', '212.156.80.5', '185.93.122.44'];
+            const sampleEmails = ['ahmet@gmail.com', 'mehmet@outlook.com', 'canan@company.com', null];
+            const sampleOS = ['Windows', 'macOS', 'Android', 'iOS', 'Linux'];
+            const sampleBrowsers = ['Chrome', 'Safari', 'Firefox', 'Edge'];
+            const sampleLocations = ['İzmir, TR (Vodafone)', 'Bursa, TR (TTNET)', 'Antalya, TR (Turkcell)', 'Ankara, TR (TurkNet)'];
+
+            const randomIP = sampleIPs[Math.floor(Math.random() * sampleIPs.length)];
+            const randomEmail = sampleEmails[Math.floor(Math.random() * sampleEmails.length)];
+            const randomOS = sampleOS[Math.floor(Math.random() * sampleOS.length)];
+            const randomBrowser = sampleBrowsers[Math.floor(Math.random() * sampleBrowsers.length)];
+            const randomLoc = sampleLocations[Math.floor(Math.random() * sampleLocations.length)];
+            const isMobile = randomOS === 'Android' || randomOS === 'iOS';
+
+            const logs = JSON.parse(localStorage.getItem('visitor_analytics_logs') || '[]');
+            logs.unshift({
+                sessionId: 'sess_' + Math.random().toString(36).substring(2, 9),
+                ip: randomIP,
+                email: randomEmail,
+                deviceType: isMobile ? 'Mobil' : 'Masaüstü',
+                os: randomOS,
+                browser: randomBrowser,
+                resolution: isMobile ? '390x844' : '1920x1080',
+                location: randomLoc,
+                lastActive: new Date().toLocaleTimeString('tr-TR'),
+                timestamp: Date.now()
+            });
+
+            localStorage.setItem('visitor_analytics_logs', JSON.stringify(logs.slice(0, 20)));
+            renderAdminDashboard();
+            showNotification(`Yeni ziyaretçi eklendi: ${randomIP}`);
+        }
+
+        // Admin Utility: Clear Logs
+        function clearVisitorLogs() {
+            localStorage.removeItem('visitor_analytics_logs');
+            recordCurrentVisitor();
+            renderAdminDashboard();
+            showNotification('Tüm ziyaretçi kayıtları temizlendi.');
+        }
+
+        // Custom Toast Notification System
+        function showNotification(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'glass-panel px-4 py-3 rounded-xl shadow-2xl border border-blue-500/30 text-xs font-medium text-slate-100 flex items-center gap-2 transition-all transform translate-y-2 opacity-0';
+            toast.innerHTML = `<i class="fa-solid fa-circle-info text-blue-400 text-sm"></i> ${message}`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 50);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
